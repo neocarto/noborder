@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two spheres</title>
+<script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/map.css">
+</head>
+<body>
+
+    <div id="map"></div>
+    <script type="text/javascript">
+
+    // TANAKA EFFECT;
+    var tanaka  = 1;
+
+    var w = 800;
+    var h = 850;
+
+    var svg = d3.select("div#map").append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("class","back")
+    .attr("viewBox", "0 0 " + w + " " + h)
+    .classed("svg-content", true);
+
+    var projection1 = d3.geoOrthographic()
+    .scale(350)
+    .translate([w / 2 + 20, h / 2 - 30])
+    .clipAngle(90) // without this options countries on the other side are visible
+    .precision(.1);
+
+    var projection2 = d3.geoOrthographic()
+    .scale(120)
+    .translate([800 - 150, 800 - 150])
+    .clipAngle(90) // without this options countries on the other side are visible
+    .precision(.1);
+
+    var path1 = d3.geoPath().projection(projection1);
+    var path2 = d3.geoPath().projection(projection2);
+
+    // load layers and data
+    //var smooth = d3.json("data/smooth.geojson", function(d) {colsById.set(d.properties.id, d.properties.cols)});
+    var smooth = d3.json("data/smooth.geojson");
+    var graticule = d3.geoGraticule().step([5, 5]);
+    var graticule2 = d3.geoGraticule().step([10, 10]);
+
+    Promise.all([smooth]).then(function(values){
+
+      // SVG FILTERS
+      var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+      radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#63b0af");
+      radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#428c8b");
+      var filter = svg.append("defs").append("filter").attr("id", "blur").append("feGaussianBlur").attr("stdDeviation", 7);
+      var defs = svg.append("defs");
+      var filter2 = defs.append("filter").attr("id", "drop-shadow").attr("height", "130%");
+      filter2.append("feGaussianBlur").attr("in", "SourceAlpha").attr("stdDeviation", tanaka).attr("result", "blur");
+      filter2.append("feOffset").attr("in", "blur").attr("dx", tanaka).attr("dy", tanaka).attr("result", "offsetBlur");
+      var feMerge = filter2.append("feMerge");
+      feMerge.append("feMergeNode").attr("in", "offsetBlur")
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+    // BIG MAP
+    var bigmap = svg.append("g").attr("id","bigmap");
+    var sphere1 = bigmap.append("path")
+        .datum(graticule.outline)
+        .style("fill", "url(#radial-gradient)")
+        .attr("class", "sphere")
+        .attr("d", path1)
+    bigmap.append("path")
+      .datum(graticule)
+      .attr("class", "graticule")
+      .attr("d", path1);
+    bigmap.append("path")
+      .datum(graticule.outline)
+      .attr("class", "graticuleOutline")
+      .attr("d", path1)
+      .attr("filter", "url(#blur)");
+    bigmap.selectAll("path")
+            .data(values[0].features)
+            .enter()
+            .append("path")
+            .attr("class","smooth")
+            .attr("d", path1)
+            .style("filter", "url(#drop-shadow)")
+            .style("fill", function(d) { return d.properties.cols; });
+
+      // SMALL MAP
+        var smallmap = svg.append("g").attr("id","smallmap");
+        var sphere2 = smallmap.append("path")
+            .datum(graticule.outline)
+            .style("fill", "url(#radial-gradient)")
+            .attr("class", "sphere")
+            .attr("d", path2)
+        smallmap.append("path")
+          .datum(graticule2)
+          .attr("class", "graticule")
+          .attr("d", path2);
+        smallmap.append("path")
+          .datum(graticule.outline)
+          .attr("class", "graticuleOutline")
+          .attr("d", path2)
+          .attr("filter", "url(#blur)");
+        smallmap.selectAll("path")
+                .data(values[0].features)
+                .enter()
+                .append("path")
+                .attr("class","smooth")
+                .attr("d", path2)
+                .style("fill", function(d) { return d.properties.cols; });
+
+// INITAL PARAMETERS
+var a = -30;
+var b = -20;
+var c = a+180;
+var d = (b >= 0) ? -b : Math.abs(b);
+Math.abs(b)
+projection1.rotate([a, b]);
+projection2.rotate([c, d]);
+bigmap.selectAll(".graticule")
+    .datum(graticule)
+    .attr("d", path1);
+bigmap.selectAll(".smooth")
+        .attr("d", path1);
+smallmap.selectAll(".graticule")
+        .datum(graticule2)
+        .attr("d", path2);
+smallmap.selectAll(".smooth")
+                .attr("d", path2);
+
+      // layout
+      var maptitle = "A WORLD WITHOUT BORDERS";
+      var author = "Cartography: Nicolas Lambert, 2019."
+      var note = "Made With R & D3.js (data and codes available on github: https://github.com/neocarto/noborder)."
+      var methodo =  "Potentials as defined by J.Q. Stewart (1942) with theses parameters: Function = exponential ; Span = 200km ; Beta = 3."
+      var source = "Source: Gridded Population of the World (GPW) - Count, rev11, 2020, 1_deg."
+      var legtitle = "World Population in 2020"
+      var legsubtitle = "(In thousands inhabitants)";
+
+      var layout = svg.append("g").attr("id","layout");
+      rectangle = layout.append("rect")
+        .attr("x", 0).attr("y", 790).attr("width", 800).attr("height", 60).attr("fill","#468c8b");
+      var posx = 10; var posy = 840;
+      layout.append("text").text(maptitle)
+      .attr("x", posx).attr("y", posy)
+      .attr("class", "maptitle")
+      var delta = 11;
+      y = 746;
+      layout.append("text").text(author)
+      .attr("x", 10).attr("y", y)
+      .attr("class", "note")
+      layout.append("text").text(source)
+      .attr("x", 10).attr("y", y+ delta)
+      .attr("class", "note")
+      layout.append("text").text(methodo)
+      .attr("x", 10).attr("y", y + delta *2)
+      .attr("class", "note")
+      layout.append("text").text(note)
+      .attr("x", 10).attr("y", y + delta *3)
+      .attr("class", "note")
+
+      // Legend
+
+      layout.append("text").text(legtitle)
+      .attr("x", 10).attr("y", 30)
+      .attr("class", "legtitle")
+      layout.append("text").text(legsubtitle)
+      .attr("x", 10).attr("y", 45)
+      .attr("class", "legsubtitle")
+
+      // boxes
+
+      var xpos = 10;
+      var ypos = 0;
+      var boxwidth = 15;
+      var boxheight = 37.5;
+      var boxgap = 37.5;
+
+      d3.csv("data/legend.csv").then(function(data) {
+      layout.append("g").attr("id","boxes")
+      .selectAll('legendEntry')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr("x", xpos)
+      .attr("y", function(d, i) {return i * boxgap + ypos + boxgap*2;})
+     .attr("width", boxwidth)
+     .attr("height", boxheight)
+     .attr("fill", function(d){return d.col;});
+
+    layout.append("g").attr("id","boxestextes")
+    .selectAll('legendEntry')
+    .data(data)
+    .enter()
+    .append('text')
+    .text(function(d){return +d.val;})
+    .attr("x", xpos + boxwidth + boxgap/5)
+    .attr("y", function(d, i) {return i * boxgap + ypos + boxgap*2 + 3})
+    .attr("class", "txtleg");
+    });
+    layout.append("text").text("0")
+    .attr("x", xpos + boxwidth + boxgap/5)
+    .attr("y", 17 * boxgap + ypos + boxgap*2 + 3)
+    .attr("class", "txtleg");
+
+      // INTERACTIVITY & ROTATION (DRAG)******************
+
+            const λ = d3.scaleLinear().domain([0, w]).range([-180, 180]);
+            const φ = d3.scaleLinear().domain([0, h]).range([90, -90]);
+
+              var drag = d3.drag().subject(function() {
+                  var r = projection1.rotate();
+                  return {
+                      x: λ.invert(r[0]),
+                      y: φ.invert(r[1]),
+                  };
+
+              }).on("drag", function() {
+                  projection1.rotate([λ(d3.event.x), φ(d3.event.y)]);
+                  var x2 = λ(d3.event.x)+180;
+                  var y2 = (φ(d3.event.y) >= 0) ? -φ(d3.event.y) : Math.abs(φ(d3.event.y));
+                  projection2.rotate([x2, y2]);
+                  bigmap.selectAll(".graticule")
+                      .datum(graticule)
+                      .attr("d", path1);
+                  bigmap.selectAll(".smooth")
+                          .attr("d", path1);
+                  smallmap.selectAll(".graticule")
+                          .datum(graticule2)
+                          .attr("d", path2);
+                  smallmap.selectAll(".smooth")
+                                  .attr("d", path2);
+              });
+
+              svg.call(drag);
+
+    });
+
+</script>
+</body>
+</html>

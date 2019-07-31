@@ -1,0 +1,43 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,800,700,300);
+@import url(https://fonts.googleapis.com/css?family=Squada+One);
+
+#map {width:800px; height:850px}
+.graticule {fill:none ; stroke: white; stroke-width: .5px;  stroke-opacity: .5; stroke-dasharray: 2 }
+.sphere {fill: #285c5b; stroke: none}
+.back {background-color : #DDD}
+.graticuleOutline {fill: none; stroke: black; stroke-width: 4px}
+.smooth {fill: #eb4034 ; stroke-width: 0.4px; stroke : none}
+.maptitle {
+  font-family: 'Open Sans', sans-serif;
+  fill: #EDEDED;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 58px;
+  font-weight: 600;
+  letter-spacing: -3px;
+  line-height: 1;
+  text-shadow: #90a0a3 3px 2px 0;
+}
+.note {
+  font-family: 'Open Sans', sans-serif;
+  fill: #468c8b;
+  font-size: 10px;
+}
+
+.legtitle {
+  font-family: 'Open Sans', sans-serif;
+  fill: #468c8b;
+  font-size: 20px;
+}
+
+.legsubtitle {
+  font-family: 'Open Sans', sans-serif;
+  fill: #468c8b;
+  font-size: 12px;
+}
+
+.txtleg {
+  font-family: 'Open Sans', sans-serif;
+  fill: #468c8b;
+  font-size: 8px;
+}
