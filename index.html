@@ -158,6 +158,20 @@ smallmap.selectAll(".smooth")
       .attr("x", 10).attr("y", y + delta *3)
       .attr("class", "note")
 
+      // Help
+      var help1 = "Rotate";
+      var help2 = "the Globe";
+      var help3 = "to Change";
+      var help4 = "the View";
+      delta  = 20;
+      x = 707
+      y = 23
+      layout.append("polygon").attr("fill","#CCCCCC").attr("points", "690,0, 800,0, 800,100 700,100 650,130 690,85");
+      layout.append("text").text(help1).attr("text-anchor", "start").attr("x", x).attr("y", y).attr("class","txthelp");
+      layout.append("text").text(help2).attr("text-anchor", "start").attr("x", x).attr("y", y+delta).attr("class","txthelp");
+      layout.append("text").text(help3).attr("text-anchor", "start").attr("x", x).attr("y", y+delta*2).attr("class","txthelp");
+      layout.append("text").text(help4).attr("text-anchor", "start").attr("x", x).attr("y", y+delta*3).attr("class","txthelp");
+
       // Legend
 
       layout.append("text").text(legtitle)
@@ -167,7 +181,7 @@ smallmap.selectAll(".smooth")
       .attr("x", 10).attr("y", 45)
       .attr("class", "legsubtitle")
 
-      // boxes
+        // boxes
 
       var xpos = 10;
       var ypos = 0;
@@ -202,6 +216,15 @@ smallmap.selectAll(".smooth")
     .attr("y", 17 * boxgap + ypos + boxgap*2 + 3)
     .attr("class", "txtleg");
 
+    layout.append("text").text("HIGH DENSITIES")
+    .attr("x", 30).attr("y", 100)
+    .attr("class", "leglabels");
+
+    layout.append("text").text("DESERTS")
+    .attr("x", 30).attr("y", 700)
+    .attr("class", "leglabels");
+
+
       // INTERACTIVITY & ROTATION (DRAG)******************
 
             const λ = d3.scaleLinear().domain([0, w]).range([-180, 180]);
@@ -232,6 +255,8 @@ smallmap.selectAll(".smooth")
               });
 
               svg.call(drag);
+
+
 
     });
 
